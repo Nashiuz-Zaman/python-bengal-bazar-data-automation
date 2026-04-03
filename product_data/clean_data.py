@@ -4,13 +4,13 @@ from utils import resolve_csv_paths
 
 #  Basic building blocks
 num = r"\d+(?:\.\d+)?"
-units = r"(?:gm|g|ml|kg|l(?:tr)?|mg|pkt|pcs?|pieces?|slices?)"
+units = r"(?:gr?a?m|g|ml|kg|l(?:tr)?|mg|pkt|pcs?|pieces?|slices?)"
 units_compiled = re.compile(units, flags=re.IGNORECASE)
 
 # total_product_unit_pattern = (
 #     rf"(\(?\s*{num}.*\)?.*?{units}\s*?(?:\/?\s*?{units})?\)?.*?)"
 # )
-total_product_unit_pattern = rf"( \(? \s* {num} \s* {units}? \)? (?:\s|-|up)* (?:{num} \s* {units}? (?:\s|up)* \)? (?:\s|up)* {units}? \/? {units}? \)? )? )"
+total_product_unit_pattern = rf"( \(? \s* {num} \s* {units}? \)? (?:\s*|-|up)? (?:{num} \s* {units}? (?:\s*|up)? \)? (?:\s*|up)? {units}? (?:\s*|up)? \/? {units}? (?:\s*|up)? \)? )? )"
 total_product_unit_pattern_compiled = re.compile(
     total_product_unit_pattern, re.IGNORECASE | re.VERBOSE
 )
@@ -52,7 +52,7 @@ def format_unit_callback(match):
         unit = "pieces"
     elif unit in ["pc", "piece", "slice"]:
         unit = "piece"
-    elif unit == "g":
+    elif unit in ["g", "gram", "grams"]:
         unit = "gm"
     elif unit == "l":
         unit = "ltr"
@@ -142,7 +142,7 @@ def format_unit_cell(text: str) -> str:
 
     text = strip_unwanted_chars(text)
     text = normalize_text(text)
-    text = normalize_units(text, isDisplay=False).title().strip()
+    text = normalize_units(text, isDisplay=True).title().strip().strip("()")
 
     return text
 
