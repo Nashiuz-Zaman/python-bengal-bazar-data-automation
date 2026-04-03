@@ -7,13 +7,15 @@ num = r"\d+(?:\.\d+)?"
 units = r"(?:gm|g|ml|kg|l(?:tr)?|mg|pkt|pcs?|pieces?|slices?)"
 units_compiled = re.compile(units, flags=re.IGNORECASE)
 
-total_product_unit_pattern = (
-    rf"(\(?\s*{num}.*\)?.*?{units}\s*?(?:\/?\s*?{units})?\)?.*?)"
-)
+# total_product_unit_pattern = (
+#     rf"(\(?\s*{num}.*\)?.*?{units}\s*?(?:\/?\s*?{units})?\)?.*?)"
+# )
+total_product_unit_pattern = rf"( \(? \s* {num} \s* {units}? \)? (?:\s|-|up)* (?:{num} \s* {units}? (?:\s|up)* \)? (?:\s|up)* {units}? \/? {units}? \)? )? )"
 total_product_unit_pattern_compiled = re.compile(
-    total_product_unit_pattern, re.IGNORECASE
+    total_product_unit_pattern, re.IGNORECASE | re.VERBOSE
 )
 unwanted_chars_regex_compiled = re.compile(r"[^a-zA-Z0-9./()+-]+")
+USD_RATE = 110
 
 
 def strip_unwanted_chars(text: str) -> str:
@@ -71,6 +73,7 @@ def clean_unit(matched: re.Match, isDisplay: bool) -> str:
     matched_text = matched.group(1).strip()
 
     if isDisplay:
+
         matched_text = re.sub(r"[\(\)]", "", matched_text)
         matched_text = re.sub(
             rf"(?<=[\/\)\d\s])\b{units}\b",
@@ -112,7 +115,7 @@ def format_display_name(text):
     text = normalize_units(text, isDisplay=True)
     text = re.sub(rf"({num})\s*-\s*({num})", r"\1-\2", text, flags=re.IGNORECASE)
     text = re.sub(r"(\s{2,}|((?<=[a-zA-Z]) - (?=[a-zA-Z])))", " ", text)
-    text = re.sub(rf"({units})\)\sUp", r"\1 Up)", text, flags=re.IGNORECASE)
+    text = re.sub(r"(?<=[a-zA-Z])\s?-\s?(?=\()", r" ", text, flags=re.IGNORECASE)
 
     return text
 
@@ -123,7 +126,6 @@ def format_slug(text: str) -> str:
 
     text = strip_unwanted_chars(text)
     text = normalize_text(text)
-
     text = replace_contn(text)
     text = normalize_units(text, isDisplay=False)
     text = re.sub(r"[\/\s]+", r"-", text)
@@ -132,6 +134,37 @@ def format_slug(text: str) -> str:
     text = text.lower()
 
     return text
+
+
+def format_unit_cell(text: str) -> str:
+    if not text:
+        return text
+
+    text = strip_unwanted_chars(text)
+    text = normalize_text(text)
+    text = normalize_units(text, isDisplay=False).title().strip()
+
+    return text
+
+
+def convert_tk_to_usd(value: str) -> str:
+    if not value:
+        return value
+
+    try:
+        # Remove commas, spaces, currency symbols if any
+        clean = re.sub(r"[^\d.]", "", value)
+
+        if not clean:
+            return value
+
+        tk = float(clean)
+        usd = tk / USD_RATE
+
+        # format to 2 decimal places
+        return f"{usd:.2f}"
+    except Exception:
+        return value
 
 
 def clean_data(csv_name: str):
@@ -157,15 +190,23 @@ def clean_data(csv_name: str):
                     cleaned_row[key] = value
                     continue
 
-                if key == "itemDisplayName":
+                if key == "itemSlug":
+                    new_value = value.strip()
+                    cleaned_row[key] = format_slug(new_value)
+
+                elif key == "itemDisplayName":
                     new_value = value.strip()
                     cleaned_row[key] = format_display_name(new_value)
 
-                elif key == "itemSlug":
+                elif key == "unit":
                     new_value = value.strip()
-                    cleaned_row[key] = format_slug(new_value)
+                    cleaned_row[key] = format_unit_cell(new_value)
+
+                elif key in ["unitSalesPrice", "unitDiscount", "discountSalesPrice"]:
+                    cleaned_row[key] = convert_tk_to_usd(value.strip())
+
                 else:
-                    cleaned_row[key] = value
+                    cleaned_row[key] = value.strip()
 
             writer.writerow(cleaned_row)
 
