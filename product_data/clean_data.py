@@ -167,6 +167,18 @@ def convert_tk_to_usd(value: str) -> str:
         return value
 
 
+def normalize_brand(value: str) -> str:
+    if not value:
+        return "Bengal Bazar"
+
+    val = value.strip()
+
+    if not val or val.lower() == "no brand":
+        return "Bengal Bazar"
+
+    return val
+
+
 def clean_data(csv_name: str):
     input_csv_path, output_csv_path = resolve_csv_paths(
         input_csv_name=csv_name,
@@ -204,6 +216,9 @@ def clean_data(csv_name: str):
 
                 elif key in ["unitSalesPrice", "unitDiscount", "discountSalesPrice"]:
                     cleaned_row[key] = convert_tk_to_usd(value.strip())
+
+                elif key in ["itemBrandName", "brandDisplayName"]:
+                    cleaned_row[key] = normalize_brand(value)
 
                 else:
                     cleaned_row[key] = value.strip()
