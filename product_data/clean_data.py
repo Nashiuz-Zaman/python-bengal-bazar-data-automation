@@ -116,6 +116,7 @@ def format_display_name(text):
     text = re.sub(rf"({num})\s*-\s*({num})", r"\1-\2", text, flags=re.IGNORECASE)
     text = re.sub(r"(\s{2,}|((?<=[a-zA-Z]) - (?=[a-zA-Z])))", " ", text)
     text = re.sub(r"(?<=[a-zA-Z])\s?-\s?(?=\()", r" ", text, flags=re.IGNORECASE)
+    text = re.sub(r"\)/ \(", "/", text)
 
     return text
 
@@ -128,8 +129,8 @@ def format_slug(text: str) -> str:
     text = normalize_text(text)
     text = replace_contn(text)
     text = normalize_units(text, isDisplay=False)
-    text = re.sub(r"[\/\s]+", r"-", text)
-    text = replace_multiple_hyphens_with_single_hyphen(text)
+    text = re.sub(r"[\/\s\(\)]+", r"-", text)
+    text = replace_multiple_hyphens_with_single_hyphen(text).strip("-")
 
     text = text.lower()
 
