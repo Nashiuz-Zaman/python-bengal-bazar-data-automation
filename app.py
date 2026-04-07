@@ -2,7 +2,9 @@ import sys
 from product_data import (
     clean_data,
     extract_unique_brands,
-) 
+    extract_categories,
+    transform_to_bengal_bazar,
+)
 from utils import get_valid_csv_name
 
 
@@ -10,9 +12,10 @@ def show_menu():
     print("\n--- Bengal Bazar Data Tool ---")
     print("1. Clean Data")
     print("2. Extract Unique Brands (Merge from multiple CSVs)")
-    print("3. Convert To Bengal Bazar Format")
-    print("4. Upload To Bengal Bazar")
-    print("5. Exit")
+    print("3. Extract Categories & SubCategories")
+    print("4. Convert To Bengal Bazar Format")
+    print("5. Upload To Bengal Bazar")
+    print("6. Exit")
 
 
 def handle_clean_data():
@@ -65,6 +68,59 @@ def handle_brand_extraction():
     input("\nPress Enter to return to the menu...")
 
 
+def handle_category_extraction():
+    print("\nCategory & SubCategory Extraction")
+    print("Enter filenames one by one. Type 'done' when finished.")
+
+    csv_list = []
+    while len(csv_list) < 10:
+        prompt = f"Enter CSV name {len(csv_list) + 1} (or 'done'): "
+        valid_name = get_valid_csv_name(prompt)
+
+        if not valid_name or valid_name.lower() == "done.csv":
+            break
+
+        csv_list.append(valid_name)
+
+    if not csv_list:
+        return
+
+    try:
+        cat_count, sub_count = extract_categories(csv_list)
+        print(f"✅ Extracted {cat_count} Categories and {sub_count} SubCategories.")
+        print("📂 Files created: categories.csv, subcategories.csv")
+    except Exception as e:
+        print(f"❌ Extraction failed: {e}")
+
+    input("\nPress Enter to return to the menu...")
+
+
+def handle_format_conversion():
+    """Handler for Option 4: Convert To Bengal Bazar Format"""
+    print("\n--- Convert to Bengal Bazar Format ---")
+
+    # Get the source file
+    source_csv = get_valid_csv_name("Enter the source CSV filename to convert: ")
+    if not source_csv:
+        return
+
+    # Get the output destination
+    output_csv = get_valid_csv_name(
+        "Enter the desired output filename (e.g., products_import.csv): "
+    )
+    if not output_csv:
+        return
+
+    try:
+        print(f"⏳ Transforming {source_csv}...")
+        transform_to_bengal_bazar(source_csv)
+        print(f"✅ Transformation complete! File saved as: {output_csv}")
+    except Exception as e:
+        print(f"❌ Transformation failed: {e}")
+
+    input("\nPress Enter to return to the menu...")
+
+
 def main():
     while True:
         show_menu()
@@ -74,7 +130,9 @@ def main():
             handle_clean_data()
         elif choice == "2":
             handle_brand_extraction()
-        elif choice == "5":
+        elif choice == "3":
+            handle_category_extraction()
+        elif choice == "6":
             print("👋 Bye!")
             sys.exit()
         else:
