@@ -88,7 +88,7 @@ def handle_category_extraction():
     try:
         cat_count, sub_count = extract_categories(csv_list)
         print(f"✅ Extracted {cat_count} Categories and {sub_count} SubCategories.")
-        print("📂 Files created: categories.csv, subcategories.csv")
+        print("Files created: categories.csv, subcategories.csv")
     except Exception as e:
         print(f"❌ Extraction failed: {e}")
 
@@ -96,25 +96,19 @@ def handle_category_extraction():
 
 
 def handle_format_conversion():
-    """Handler for Option 4: Convert To Bengal Bazar Format"""
     print("\n--- Convert to Bengal Bazar Format ---")
 
     # Get the source file
-    source_csv = get_valid_csv_name("Enter the source CSV filename to convert: ")
-    if not source_csv:
-        return
-
-    # Get the output destination
-    output_csv = get_valid_csv_name(
-        "Enter the desired output filename (e.g., products_import.csv): "
+    source_csv = get_valid_csv_name(
+        "Enter product data CSV filename to convert (e.g., meat_product_data.csv): "
     )
-    if not output_csv:
+    if not source_csv:
         return
 
     try:
         print(f"⏳ Transforming {source_csv}...")
         transform_to_bengal_bazar(source_csv)
-        print(f"✅ Transformation complete! File saved as: {output_csv}")
+
     except Exception as e:
         print(f"❌ Transformation failed: {e}")
 
@@ -132,6 +126,8 @@ def main():
             handle_brand_extraction()
         elif choice == "3":
             handle_category_extraction()
+        elif choice == "4":
+            handle_format_conversion()
         elif choice == "6":
             print("👋 Bye!")
             sys.exit()

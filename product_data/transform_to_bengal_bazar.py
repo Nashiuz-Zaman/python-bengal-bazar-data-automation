@@ -65,23 +65,26 @@ def transform_to_bengal_bazar(input_csv_name: str):
             image_array_json = json.dumps([full_img]) if full_img else json.dumps([])
             display_name = row.get("itemDisplayName", "")
             details = row.get("itemDetails", "")
+            slug = row.get("itemSlug", "")
+            categoryName = row.get("itemCategoryName", "")
+            subCategoryName = row.get("itemSubCategoryName", "")
 
             entry = {
                 # --- PRODUCT SECTION ---
-                "productSlug": row.get("itemSlug", ""),
+                "productSlug": slug,
                 "productDisplayName": display_name,
                 "productBrandName": row.get("itemBrandName", ""),
-                "categoryName": row.get("itemCategoryName", ""),
-                "subCategoryName": row.get("itemSubCategoryName", ""),
+                "categoryName": categoryName,
+                "subCategoryName": subCategoryName,
                 "warrantyAndSupport": "Standard Warranty",
                 "productDetails": details,
                 "status": "PUBLISHED",
                 "specifications": json.dumps({}),
                 "seoTitle": display_name,
                 "seoDescription": details,
-                "metaKeywords": "",
-                "tags": "",
-                "canonicalUrl": "",
+                "metaKeywords": f"{categoryName},{subCategoryName}",
+                "tags": f"{categoryName},{subCategoryName}",
+                "canonicalUrl": f"https://bengalbazar.vercel.app/product/{slug}",
                 "globalVideos": json.dumps([]),
                 "globalImages": image_array_json,
                 # --- VARIANT SECTION ---
@@ -99,11 +102,11 @@ def transform_to_bengal_bazar(input_csv_name: str):
             transformed_data.append(entry)
 
     # 4. Write the cleaned CSV
-    with open(output_path, mode="w", encoding="utf-8", newline="") as read_file:
-        writer = csv.DictWriter(read_file, fieldnames=headers)
+    with open(output_path, mode="w", encoding="utf-8", newline="") as write_file:
+        writer = csv.DictWriter(write_file, fieldnames=headers)
         writer.writeheader()
         writer.writerows(transformed_data)
 
     print(f"✅ Success! Generated: {output_path.name}")
-    print(f"📍 Location: {output_path}")
-    print(f"🔗 Total Rows: {len(transformed_data)}")
+    print(f"Location: {output_path}")
+    print(f"Total Rows: {len(transformed_data)}")
