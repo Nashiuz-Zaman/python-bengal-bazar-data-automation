@@ -1,6 +1,6 @@
 import csv
 import json
-from utils import resolve_csv_paths
+from utils import generate_sku, resolve_csv_paths, to_pascal_case
 
 
 def transform_to_bengal_bazar(input_csv_name: str):
@@ -23,9 +23,13 @@ def transform_to_bengal_bazar(input_csv_name: str):
     headers = [
         "productSlug",
         "productDisplayName",
-        "productBrandName",
+        "brandName",
+        "brandDisplayName",
         "categoryName",
+        "categoryDisplayName",
+        "category_icon",
         "subCategoryName",
+        "subCategoryDisplayName",
         "warrantyAndSupport",
         "productDetails",
         "status",
@@ -60,44 +64,54 @@ def transform_to_bengal_bazar(input_csv_name: str):
         reader = csv.DictReader(read_file)
 
         for row in reader:
-
             full_img = row.get("fullImageUrl", "").strip()
             image_array_json = json.dumps([full_img]) if full_img else json.dumps([])
             display_name = row.get("itemDisplayName", "")
-            details = row.get("itemDetails", "")
+            details = row.get("itemDetails") or "No details provided."
             slug = row.get("itemSlug", "")
-            categoryName = row.get("itemCategoryName", "")
-            subCategoryName = row.get("itemSubCategoryName", "")
+            brand_name = row.get("itemBrandName", "Bengal Bazar")
+            category_name = row.get("itemCategoryName", "")
+            sub_category_name = row.get("itemSubCategoryName", "")
+            unit = row.get("unit", "pcs")
+
+            # Generate the unique short SKU
+            sku = generate_sku(brand_name, category_name, slug, unit)
 
             entry = {
                 # --- PRODUCT SECTION ---
                 "productSlug": slug,
                 "productDisplayName": display_name,
-                "productBrandName": row.get("itemBrandName", ""),
-                "categoryName": categoryName,
-                "subCategoryName": subCategoryName,
+                "brandName": brand_name,
+                "brandDisplayName": row.get("brandDisplayName", brand_name),
+                "categoryName": category_name,
+                "categoryDisplayName": row.get("categoryDisplayName", category_name),
+                "category_icon": to_pascal_case(category_name),
+                "subCategoryName": sub_category_name,
+                "subCategoryDisplayName": row.get(
+                    "subCategoryDisplayName", sub_category_name
+                ),
                 "warrantyAndSupport": "Standard Warranty",
                 "productDetails": details,
                 "status": "PUBLISHED",
-                "specifications": json.dumps({}),
+                "specifications": json.dumps([]),
                 "seoTitle": display_name,
-                "seoDescription": details,
-                "metaKeywords": f"{categoryName},{subCategoryName}",
-                "tags": f"{categoryName},{subCategoryName}",
+                "seoDescription": details[:160],
+                "metaKeywords": f"{category_name}, {sub_category_name}",
+                "tags": f"{category_name}, {sub_category_name}",
                 "canonicalUrl": f"https://bengalbazar.vercel.app/product/{slug}",
                 "globalVideos": json.dumps([]),
                 "globalImages": image_array_json,
                 # --- VARIANT SECTION ---
-                "variantName": "",
-                "sku": f"{row.get('itemSlug')}-{row.get('unit', 'default').lower()}",
+                "variantName": unit if unit else "Default",
+                "sku": sku,
                 "stock": 100,
-                "unit": row.get("unit", ""),
-                "unitSalesPrice": row.get("unitSalesPrice", ""),
-                "unitDiscount": row.get("unitDiscount", ""),
-                "discountSalesPrice": row.get("discountSalesPrice", ""),
+                "unit": unit,
+                "unitSalesPrice": row.get("unitSalesPrice") or "0",
+                "unitDiscount": row.get("unitDiscount") or "0",
+                "discountSalesPrice": row.get("discountSalesPrice") or "0",
                 "variantVideos": json.dumps([]),
                 "variantImages": image_array_json,
-                "attributes": json.dumps({}),
+                "attributes": json.dumps({"unit": unit}),
             }
             transformed_data.append(entry)
 
