@@ -27,7 +27,7 @@ def transform_to_bengal_bazar(input_csv_name: str):
         "brandDisplayName",
         "categoryName",
         "categoryDisplayName",
-        "category_icon",
+        "categoryIcon",
         "subCategoryName",
         "subCategoryDisplayName",
         "warrantyAndSupport",
@@ -85,7 +85,7 @@ def transform_to_bengal_bazar(input_csv_name: str):
                 "brandDisplayName": row.get("brandDisplayName", brand_name),
                 "categoryName": category_name,
                 "categoryDisplayName": row.get("categoryDisplayName", category_name),
-                "category_icon": to_pascal_case(category_name),
+                "categoryIcon": to_pascal_case(category_name),
                 "subCategoryName": sub_category_name,
                 "subCategoryDisplayName": row.get(
                     "subCategoryDisplayName", sub_category_name

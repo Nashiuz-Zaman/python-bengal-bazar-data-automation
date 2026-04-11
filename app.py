@@ -4,6 +4,7 @@ from product_data import (
     extract_unique_brands,
     extract_categories,
     transform_to_bengal_bazar,
+    upload_to_bengal_bazar,
 )
 from utils import get_valid_csv_name
 
@@ -115,6 +116,26 @@ def handle_format_conversion():
     input("\nPress Enter to return to the menu...")
 
 
+def handle_upload_to_bengal_bazar():
+    print("\n--- Upload to Bengal Bazar ---")
+
+    # Get the source file
+    source_csv = get_valid_csv_name(
+        "Enter product data CSV filename to upload (e.g., meat_product_data.csv): "
+    )
+    if not source_csv:
+        return
+
+    try:
+        print(f"⏳ Uploading {source_csv}...")
+        upload_to_bengal_bazar(source_csv)
+
+    except Exception as e:
+        print(f"❌ Upload failed: {e}")
+
+    input("\nPress Enter to return to the menu...")
+
+
 def main():
     while True:
         show_menu()
@@ -128,8 +149,10 @@ def main():
             handle_category_extraction()
         elif choice == "4":
             handle_format_conversion()
+        elif choice == "5":
+            handle_upload_to_bengal_bazar()
         elif choice == "6":
-            print("👋 Bye!")
+            print("Bye!")
             sys.exit()
         else:
             print("Invalid selection, please try again.")
