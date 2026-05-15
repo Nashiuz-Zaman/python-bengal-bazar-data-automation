@@ -52,7 +52,5 @@ This interactive automation engine provides five core capabilities:
 ---
 
 ## 🌟 Why this matters
-This project demonstrates **Backend Engineering** and **Data Architect** competencies:
-* **Scalability:** Capable of processing 10,000+ items in seconds, a task that would take days manually.
-* **Maintainability:** Decoupled logic using a modular CLI makes the pipeline easy to update as data sources change.
-* **Systems Thinking:** Shows an understanding of the full lifecycle of data—from a raw scraper state to a rendered UI component in a web application.
+* **Scalability:** Capable of processing huge csv data in seconds, a task that would take days manually.
+* **Systems Thinking:** Handles the full lifecycle of data-conversion from a raw data scraper state to a tranformed UI component-ready state.
